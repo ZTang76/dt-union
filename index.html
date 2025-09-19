@@ -50,6 +50,12 @@
     </div>
   </div>
 
+  <!-- 公告栏 -->
+  <div class="max-w-5xl mx-auto px-6 py-6">
+    <h2 class="text-2xl font-bold mb-3">📢 公告</h2>
+    <div id="posts-announcement" class="space-y-3"></div>
+  </div>
+
   <div class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-6">
     <div class="card bg-white rounded-2xl p-6 shadow">
       <h3 class="text-xl font-bold mb-2">推理俱乐部</h3>
@@ -139,53 +145,61 @@
       <div id="approvedUsers" class="mt-2"></div>
     </div>
   </div>
+
+  <!-- 发布公告 -->
+  <div class="mt-8">
+    <h3 class="font-semibold">发布公告</h3>
+    <input id="annTitle" placeholder="公告标题" class="border p-2 rounded w-full mb-2">
+    <textarea id="annContent" placeholder="公告内容" class="border p-2 rounded w-full mb-2"></textarea>
+    <button onclick="addAnnouncement()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded">发布公告</button>
+  </div>
 </section>
 
-<!-- ================= 脚本 ================= -->
 <script>
-/* ================= 配置 ================= */
+/* Supabase 配置 */
 const SUPABASE_URL = "https://pagpdgzuvikpdbjupqql.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhZ3BkZ3p1dmlrcGRianVwcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNDQyNzgsImV4cCI6MjA3MzgyMDI3OH0.t7OuWP_leNs74XmXVH2ilg21PqetYEk7NJjPwiF_1lY";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let currentUser = null;
-const $ = id => document.getElementById(id);
-function escapeHtml(s){return (s||'').replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]))}
+let currentUser=null;
+const $=id=>document.getElementById(id);
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
-/* 页面切换 + 权限控制 */
+/* 页面切换 */
 function go(id){
-  if ((id==='logic'||id==='fitness'||id==='admin'||id==='myposts') && !currentUser){
+  if((id==='logic'||id==='fitness'||id==='admin'||id==='myposts')&&!currentUser){
     alert("请先登录后再访问该页面");
     return go('auth');
   }
   document.querySelectorAll('.page').forEach(p=>p.style.display='none');
   $(id).style.display='block';
-  if (id==='logic') renderPosts('logic');
-  if (id==='fitness') renderPosts('fitness');
-  if (id==='admin') renderUsers();
-  if (id==='myposts') renderMyPosts();
+  if(id==='logic') renderPosts('logic');
+  if(id==='fitness') renderPosts('fitness');
+  if(id==='admin') renderUsers();
+  if(id==='myposts') renderMyPosts();
+  if(id==='home') renderAnnouncements();
   renderNav();
 }
 
-/* 导航渲染 */
+  /* 导航栏状态 */
 function renderNav(){
-  if (currentUser){
-    const name = currentUser.nickname || currentUser.email;
-    $('statusBar').textContent = `当前用户：${name}${currentUser.is_admin?'（管理员）':''}`;
-  } else {
-    $('statusBar').textContent = '当前未登录';
+  if(currentUser){
+    const name=currentUser.nickname||currentUser.email;
+    $('statusBar').textContent=`当前用户：${name}${currentUser.is_admin?'（管理员）':''}${currentUser.muted?'（已禁言）':''}`;
+  }else{
+    $('statusBar').textContent='当前未登录';
   }
-  $('adminMenu').classList.toggle('hidden', !(currentUser && currentUser.is_admin));
-  const nickBox = $('nicknameBox'); if (nickBox) nickBox.style.display = currentUser?'block':'none';
+  $('adminMenu').classList.toggle('hidden',!(currentUser&&currentUser.is_admin));
+  const nickBox=$('nicknameBox'); if(nickBox) nickBox.style.display=currentUser?'block':'none';
 }
 
 /* 启动 */
 async function bootstrap(){
-  const { data:{ session } } = await sb.auth.getSession();
-  if (session?.user){
-    const { data: prof } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
-    if (prof){
-      currentUser = { id: prof.id, email: prof.email, nickname: prof.nickname, is_admin: prof.is_admin, approved: prof.approved };
+  const { data:{ session } }=await sb.auth.getSession();
+  if(session?.user){
+    const { data: prof }=await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
+    if(prof){
+      currentUser={ id:prof.id,email:prof.email,nickname:prof.nickname,is_admin:prof.is_admin,approved:prof.approved,muted:prof.muted };
     }
   }
   renderNav(); go('home');
@@ -195,34 +209,35 @@ async function bootstrap(){
 async function register(){
   const email=$('email').value.trim(), pass=$('password').value;
   if(!email||!pass) return alert("请输入邮箱和密码");
-  const { error } = await sb.auth.signUp({ email, password:pass });
+  const { error }=await sb.auth.signUp({ email,password:pass });
   if(error) return alert(error.message);
   alert("注册成功，请到邮箱确认后再登录");
 }
 async function login(){
   const email=$('email').value.trim(), pass=$('password').value;
-  const { error } = await sb.auth.signInWithPassword({ email,password:pass });
+  const { error }=await sb.auth.signInWithPassword({ email,password:pass });
   if(error) return alert(error.message);
-  const { data:{ user } } = await sb.auth.getUser();
+  const { data:{ user } }=await sb.auth.getUser();
   await sb.from('profiles').upsert({ id:user.id,email:user.email }).select().single();
-  const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  const { data: prof }=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
   if(!prof?.approved) return alert("等待管理员审核中");
-  currentUser = { id:user.id,email:user.email,nickname:prof.nickname,is_admin:prof.is_admin,approved:prof.approved };
+  currentUser={ id:user.id,email:user.email,nickname:prof.nickname,is_admin:prof.is_admin,approved:prof.approved,muted:prof.muted };
   renderNav(); alert("登录成功"); go('home');
 }
 async function logout(){ await sb.auth.signOut(); currentUser=null; renderNav(); go('home'); }
 async function updateNickname(){
   if(!currentUser) return alert("请先登录");
   const nick=$('nicknameInput').value.trim(); if(!nick) return alert("昵称不能为空");
-  await sb.from('profiles').update({ nickname:nick }).eq('id', currentUser.id);
+  await sb.from('profiles').update({ nickname:nick }).eq('id',currentUser.id);
   currentUser.nickname=nick; renderNav(); alert("昵称已更新！");
 }
 
-/* 发帖/评论/删除/置顶 */
+/* 发帖/评论/删除/置顶/公告 */
 async function addPost(type){
+  if(!currentUser) return alert("请先登录");
+  if(currentUser.muted) return alert("你已被禁言，无法发帖");
   const title=$(type==='logic'?'logicTitle':'fitTitle').value.trim();
   const content=$(type==='logic'?'logicContent':'fitContent').value.trim();
-  if(!currentUser) return alert("请先登录");
   if(!title||!content) return alert("请输入标题和内容");
   await sb.from('posts').insert({ type,title,content,author_id:currentUser.id,author_email:currentUser.email,author_nickname:currentUser.nickname,pinned:false });
   if(type==='logic'){ $('logicTitle').value=''; $('logicContent').value=''; } else { $('fitTitle').value=''; $('fitContent').value=''; }
@@ -230,6 +245,7 @@ async function addPost(type){
 }
 async function addComment(postId,type){
   if(!currentUser) return alert("请先登录");
+  if(currentUser.muted) return alert("你已被禁言，无法评论");
   const input=$(`cmt-${postId}`); const body=input.value.trim(); if(!body) return;
   await sb.from('comments').insert({ post_id:postId,body,author_id:currentUser.id,author_email:currentUser.email,author_nickname:currentUser.nickname });
   input.value=''; renderPosts(type);
@@ -249,39 +265,62 @@ async function togglePin(postId,currentState,type){
   await sb.from('posts').update({ pinned:!currentState }).eq('id',postId);
   renderPosts(type);
 }
+async function addAnnouncement(){
+  if(!currentUser?.is_admin) return alert("仅管理员可发布公告");
+  const title=$('annTitle').value.trim(), content=$('annContent').value.trim();
+  if(!title||!content) return alert("请输入完整内容");
+  await sb.from('posts').insert({ type:'announcement',title,content,author_id:currentUser.id,author_email:currentUser.email,author_nickname:currentUser.nickname });
+  $('annTitle').value=''; $('annContent').value='';
+  renderAnnouncements();
+}
 
 /* 渲染帖子 */
 async function renderPosts(type){
   if(!currentUser){ alert("请先登录才能查看帖子"); return go('auth'); }
   const box=$(`posts-${type}`); box.innerHTML='';
-  const { data:list } = await sb.from('posts')
+  const { data:list }=await sb.from('posts')
     .select('id,type,title,content,author_email,author_nickname,author_id,created_at,pinned')
     .eq('type',type)
     .order('pinned',{ascending:false})
     .order('id',{ascending:false});
   for(const p of (list||[])){
-    const { data:cmts } = await sb.from('comments')
+    const { data:cmts }=await sb.from('comments')
       .select('id,post_id,body,author_email,author_nickname,author_id,created_at')
       .eq('post_id',p.id)
       .order('id');
     box.appendChild(renderPostCard(p,cmts||[]));
   }
 }
-
-/* 渲染我的帖子 */
 async function renderMyPosts(){
-  if (!currentUser){ alert("请先登录"); return go('auth'); }
-  const box = $('posts-mine'); box.innerHTML = '';
-  const { data:list } = await sb.from('posts')
+  if(!currentUser){ alert("请先登录"); return go('auth'); }
+  const box=$('posts-mine'); box.innerHTML='';
+  const { data:list }=await sb.from('posts')
     .select('id,type,title,content,author_email,author_nickname,author_id,created_at,pinned')
-    .eq('author_id', currentUser.id)
+    .eq('author_id',currentUser.id)
     .order('id',{ascending:false});
-  for (const p of (list||[])){
-    const { data: cmts } = await sb.from('comments')
+  for(const p of (list||[])){
+    const { data:cmts }=await sb.from('comments')
       .select('id,post_id,body,author_email,author_nickname,author_id,created_at')
-      .eq('post_id', p.id)
+      .eq('post_id',p.id)
       .order('id');
-    box.appendChild(renderPostCard(p, cmts||[]));
+    box.appendChild(renderPostCard(p,cmts||[]));
+  }
+}
+async function renderAnnouncements(){
+  const box=$('posts-announcement'); box.innerHTML='';
+  const { data:list }=await sb.from('posts')
+    .select('id,title,content,author_email,author_nickname,created_at')
+    .eq('type','announcement')
+    .order('id',{ascending:false});
+  for(const p of (list||[])){
+    const div=document.createElement('div');
+    div.className="bg-yellow-50 border border-yellow-200 rounded-lg p-4";
+    div.innerHTML=`
+      <h3 class="font-semibold text-lg">📌 ${escapeHtml(p.title)}</h3>
+      <p class="mt-1 text-slate-700 whitespace-pre-wrap">${escapeHtml(p.content)}</p>
+      <div class="text-xs text-slate-500 mt-1">发布人：${escapeHtml(p.author_nickname||p.author_email)} · ${new Date(p.created_at).toLocaleString()}</div>
+    `;
+    box.appendChild(div);
   }
 }
 
@@ -296,10 +335,12 @@ function renderPostCard(p,comments){
     <p class="mt-2 text-slate-700 whitespace-pre-wrap">${escapeHtml(p.content)}</p>
     <div class="text-xs text-slate-500 mt-2">作者：${escapeHtml(p.author_nickname||p.author_email||'未知')} · 时间：${ts}</div>
     <div class="mt-3 flex items-center gap-2">
-      <input id="cmt-${p.id}" placeholder="写评论…" class="border p-2 rounded w-2/3">
-      <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded" onclick="addComment(${p.id}, '${p.type}')">回复</button>
+      ${p.type!=='announcement' ? `
+        <input id="cmt-${p.id}" placeholder="写评论…" class="border p-2 rounded w-2/3">
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded" onclick="addComment(${p.id}, '${p.type}')">回复</button>
+      `:''}
       ${canDeletePost?`<button class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded" onclick="deletePost(${p.id}, '${p.type}')">删帖</button>`:''}
-      ${isAdmin?`<button class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded" onclick="togglePin(${p.id}, ${p.pinned}, '${p.type}')">${p.pinned?'取消置顶':'置顶'}</button>`:''}
+      ${isAdmin&&p.type!=='announcement'?`<button class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded" onclick="togglePin(${p.id}, ${p.pinned}, '${p.type}')">${p.pinned?'取消置顶':'置顶'}</button>`:''}
     </div>
     <div class="mt-2 space-y-1">
       ${(comments||[]).map(c=>{
@@ -312,12 +353,12 @@ function renderPostCard(p,comments){
   return card;
 }
 
-/* 后台 */
+/* 后台用户管理 */
 async function renderUsers(){
   if(!(currentUser&&currentUser.is_admin)){ alert("仅管理员可访问"); return go('home'); }
   const pending=$('pendingUsers'); const approved=$('approvedUsers');
   pending.innerHTML=''; approved.innerHTML='';
-  const { data } = await sb.from('profiles').select('id,email,nickname,is_admin,approved').order('email');
+  const { data }=await sb.from('profiles').select('id,email,nickname,is_admin,approved,muted').order('email');
   data.forEach(row=>{
     const html=document.createElement('div');
     html.className="p-2 border rounded mt-2 flex justify-between items-center bg-white";
@@ -325,20 +366,28 @@ async function renderUsers(){
       html.innerHTML=`<span>${row.email}${row.nickname?' / '+row.nickname:''}</span>
         <div class="flex gap-2">
           <button class="bg-emerald-600 text-white px-2 py-1 rounded" onclick="approveUser('${row.id}')">通过</button>
+          <button class="bg-rose-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">拒绝</button>
         </div>`;
       pending.appendChild(html);
     }else{
-      html.innerHTML=`<span>${row.email}${row.is_admin?'（管理员）':''}${row.nickname?' / '+row.nickname:''}</span>`;
+      html.innerHTML=`<span>${row.email}${row.is_admin?'（管理员）':''}${row.nickname?' / '+row.nickname:''}${row.muted?'（已禁言）':''}</span>
+        <div class="flex gap-2">
+          <button class="bg-rose-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">删除</button>
+          <button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="toggleMute('${row.id}', ${row.muted})">${row.muted?'解除禁言':'禁言'}</button>
+        </div>`;
       approved.appendChild(html);
     }
   });
 }
 async function approveUser(uid){ await sb.from('profiles').update({approved:true}).eq('id',uid); renderUsers(); }
+async function removeUser(uid,email){ await sb.from('profiles').delete().eq('id',uid); alert(`已删除用户：${email}`); renderUsers(); }
+async function toggleMute(uid,state){ await sb.from('profiles').update({muted:!state}).eq('id',uid); renderUsers(); }
 
 bootstrap();
 </script>
 </body>
 </html>
+
 
 
 
