@@ -25,6 +25,7 @@
       <a href="#" onclick="go('logic')" class="hover:text-blue-700">推理俱乐部</a>
       <a href="#" onclick="go('soccer')" class="hover:text-blue-700">足球俱乐部</a>
       <a href="#" onclick="go('fitness')" class="hover:text-blue-700">健身打卡</a>
+      <a href="#" onclick="go('myposts')" class="hover:text-blue-700">我的帖子</a>
       <a href="#" onclick="go('auth')" class="hover:text-blue-700">登录/注册</a>
       <span id="adminMenu" class="hidden">
         <a href="#" onclick="go('admin')" class="text-amber-700 font-semibold">后台</a>
@@ -119,6 +120,12 @@
   <div id="posts-fitness" class="mt-6 grid gap-4"></div>
 </section>
 
+<!-- 我的帖子 -->
+<section id="myposts" class="page max-w-5xl mx-auto p-6">
+  <h2 class="text-3xl font-bold">我的帖子</h2>
+  <div id="posts-mine" class="mt-6 grid gap-4"></div>
+</section>
+
 <!-- 管理员后台 -->
 <section id="admin" class="page max-w-5xl mx-auto p-6">
   <h2 class="text-2xl font-bold">管理员后台</h2>
@@ -138,7 +145,7 @@
 <script>
 /* ================= 配置 ================= */
 const SUPABASE_URL = "https://pagpdgzuvikpdbjupqql.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhZ3BkZ3p1dmlrcGRianVwcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNDQyNzgsImV4cCI6MjA3MzgyMDI3OH0.t7OuWP_leNs74XmXVH2ilg21PqetYEk7NJjPwiF_1lY";
+const SUPABASE_ANON_KEY = "替换为你自己的KEY";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
@@ -147,7 +154,7 @@ function escapeHtml(s){return (s||'').replace(/[&<>"']/g, m=>({ "&":"&amp;","<":
 
 /* 页面切换 + 权限控制 */
 function go(id){
-  if ((id==='logic'||id==='fitness'||id==='admin') && !currentUser){
+  if ((id==='logic'||id==='fitness'||id==='admin'||id==='myposts') && !currentUser){
     alert("请先登录后再访问该页面");
     return go('auth');
   }
@@ -156,6 +163,7 @@ function go(id){
   if (id==='logic') renderPosts('logic');
   if (id==='fitness') renderPosts('fitness');
   if (id==='admin') renderUsers();
+  if (id==='myposts') renderMyPosts();
   renderNav();
 }
 
@@ -259,6 +267,25 @@ async function renderPosts(type){
     box.appendChild(renderPostCard(p,cmts||[]));
   }
 }
+
+/* 渲染我的帖子 */
+async function renderMyPosts(){
+  if (!currentUser){ alert("请先登录"); return go('auth'); }
+  const box = $('posts-mine'); box.innerHTML = '';
+  const { data:list } = await sb.from('posts')
+    .select('id,type,title,content,author_email,author_nickname,author_id,created_at,pinned')
+    .eq('author_id', currentUser.id)
+    .order('id',{ascending:false});
+  for (const p of (list||[])){
+    const { data: cmts } = await sb.from('comments')
+      .select('id,post_id,body,author_email,author_nickname,author_id,created_at')
+      .eq('post_id', p.id)
+      .order('id');
+    box.appendChild(renderPostCard(p, cmts||[]));
+  }
+}
+
+/* 渲染帖子卡片 */
 function renderPostCard(p,comments){
   const card=document.createElement('div'); card.className="bg-white rounded-2xl shadow p-5";
   const ts=p.created_at?new Date(p.created_at).toLocaleString():'';
@@ -268,58 +295,51 @@ function renderPostCard(p,comments){
     <h3 class="text-xl font-bold">${p.pinned?"⭐ ":""}${escapeHtml(p.title)}</h3>
     <p class="mt-2 text-slate-700 whitespace-pre-wrap">${escapeHtml(p.content)}</p>
     <div class="text-xs text-slate-500 mt-2">作者：${escapeHtml(p.author_nickname||p.author_email||'未知')} · 时间：${ts}</div>
-    <div class="mt-2 flex gap-2">
-      ${canDeletePost?`<button class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded" onclick="deletePost(${p.id},'${p.type}')">删除帖子</button>`:''}
-      ${isAdmin?`<button class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded" onclick="togglePin(${p.id},${!!p.pinned},'${p.type}')">${p.pinned?'取消置顶':'置顶'}</button>`:''}
-    </div>
     <div class="mt-3 flex items-center gap-2">
       <input id="cmt-${p.id}" placeholder="写评论…" class="border p-2 rounded w-2/3">
-      <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded" onclick="addComment(${p.id},'${p.type}')">回复</button>
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded" onclick="addComment(${p.id}, '${p.type}')">回复</button>
+      ${canDeletePost?`<button class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded" onclick="deletePost(${p.id}, '${p.type}')">删帖</button>`:''}
+      ${isAdmin?`<button class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded" onclick="togglePin(${p.id}, ${p.pinned}, '${p.type}')">${p.pinned?'取消置顶':'置顶'}</button>`:''}
     </div>
     <div class="mt-2 space-y-1">
       ${(comments||[]).map(c=>{
-        const canDeleteCmt=currentUser&&(currentUser.is_admin||currentUser.id===c.author_id);
-        return `<div class="text-sm text-slate-800">💬 ${escapeHtml(c.author_nickname||c.author_email||'未知')}：${escapeHtml(c.body)}
-          <span class="text-xs text-slate-500">(${c.created_at?new Date(c.created_at).toLocaleString():''})</span>
-          ${canDeleteCmt?`<button class="ml-2 text-rose-600 text-xs" onclick="deleteComment(${c.id},'${p.type}')">删除</button>`:''}
-        </div>`;
+        const canDeleteCmt=currentUser&&(isAdmin||currentUser.id===c.author_id);
+        return `<div class="text-sm text-slate-800">💬 ${escapeHtml(c.author_nickname||c.author_email)}：${escapeHtml(c.body)} <span class="text-xs text-slate-500">(${c.created_at?new Date(c.created_at).toLocaleString():''})</span>
+        ${canDeleteCmt?`<button class="text-rose-600 text-xs ml-2" onclick="deleteComment(${c.id}, '${p.type}')">删除</button>`:''}</div>`
       }).join('')}
-    </div>`;
+    </div>
+  `;
   return card;
 }
 
-/* 后台用户管理 */
+/* 后台 */
 async function renderUsers(){
   if(!(currentUser&&currentUser.is_admin)){ alert("仅管理员可访问"); return go('home'); }
-  const pending=$('pendingUsers'), approved=$('approvedUsers');
+  const pending=$('pendingUsers'); const approved=$('approvedUsers');
   pending.innerHTML=''; approved.innerHTML='';
-  const { data } = await sb.from('profiles').select('id,email,is_admin,approved,nickname').order('email');
+  const { data } = await sb.from('profiles').select('id,email,nickname,is_admin,approved').order('email');
   data.forEach(row=>{
     const html=document.createElement('div');
     html.className="p-2 border rounded mt-2 flex justify-between items-center bg-white";
     if(!row.approved){
-      html.innerHTML=`<span>${row.email}</span>
+      html.innerHTML=`<span>${row.email}${row.nickname?' / '+row.nickname:''}</span>
         <div class="flex gap-2">
           <button class="bg-emerald-600 text-white px-2 py-1 rounded" onclick="approveUser('${row.id}')">通过</button>
-          ${row.is_admin?'':`<button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">删除</button>`}
         </div>`;
       pending.appendChild(html);
-    } else {
-      html.innerHTML=`<span>${row.email}${row.is_admin?'（管理员）':''}${row.nickname?' / '+row.nickname:''}</span>
-        ${row.is_admin?'':`<button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">删除</button>`}`;
+    }else{
+      html.innerHTML=`<span>${row.email}${row.is_admin?'（管理员）':''}${row.nickname?' / '+row.nickname:''}</span>`;
       approved.appendChild(html);
     }
   });
 }
 async function approveUser(uid){ await sb.from('profiles').update({approved:true}).eq('id',uid); renderUsers(); }
-async function removeUser(uid,email){ await sb.from('profiles').delete().eq('id',uid); alert(`已删除用户：${email}`); renderUsers(); }
 
-/* 启动 */
 bootstrap();
 </script>
-
 </body>
 </html>
+
 
 
 
