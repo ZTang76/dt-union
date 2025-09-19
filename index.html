@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<title>DT Union · 社团门户</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  .page{display:none}
+  .glass{backdrop-filter:saturate(140%) blur(8px); background:rgba(255,255,255,.65)}
+  .hero{background:url('https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat}
+  .card{transition:transform .2s ease, box-shadow .2s ease}
+  .card:hover{transform:translateY(-2px); box-shadow:0 12px 25px rgba(0,0,0,.08)}
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+<!-- 顶部导航 -->
+<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="font-black text-2xl tracking-wide">DT Union</div>
+    <div class="hidden md:flex items-center gap-6 text-sm">
+      <a href="#" onclick="go('home')" class="hover:text-blue-700">主页</a>
+      <a href="#" onclick="go('logic')" class="hover:text-blue-700">推理俱乐部</a>
+      <a href="#" onclick="go('soccer')" class="hover:text-blue-700">足球俱乐部</a>
+      <a href="#" onclick="go('fitness')" class="hover:text-blue-700">健身打卡</a>
+      <a href="#" onclick="go('auth')" class="hover:text-blue-700">登录/注册</a>
+      <span id="adminMenu" class="hidden">
+        <a href="#" onclick="go('admin')" class="text-amber-700 font-semibold">后台</a>
+        <a href="#" onclick="resetSite()" class="text-rose-700">重置站点</a>
+      </span>
+    </div>
+    <div id="statusBar" class="text-xs sm:text-sm italic">当前未登录</div>
+  </div>
+</nav>
+
+<!-- 主页 -->
+<section id="home" class="page block">
+  <div class="hero">
+    <div class="max-w-5xl mx-auto px-6 py-20">
+      <div class="glass rounded-2xl p-8 shadow-lg">
+        <h1 class="text-4xl md:text-5xl font-black tracking-tight">欢迎来到 DT Union</h1>
+        <p class="mt-3 text-slate-700 text-lg">推理 · 足球 · 健身 —— 一个汇聚思考与汗水的社区。</p>
+        <div class="mt-6 flex gap-3">
+          <button onclick="go('auth')" class="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded-xl">立即加入</button>
+          <button onclick="go('logic')" class="bg-white hover:bg-slate-100 border px-5 py-2 rounded-xl">看看题库</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-6">
+    <div class="card bg-white rounded-2xl p-6 shadow">
+      <h3 class="text-xl font-bold mb-2">推理俱乐部</h3>
+      <p class="text-slate-600">发布谜题，分享思路，和同好讨论最优解。</p>
+      <button onclick="go('logic')" class="mt-4 text-blue-700 hover:underline">进入题库 →</button>
+    </div>
+    <div class="card bg-white rounded-2xl p-6 shadow">
+      <h3 class="text-xl font-bold mb-2">足球俱乐部</h3>
+      <p class="text-slate-600">友谊赛、观赛、战术复盘，球场里外尽情聊。</p>
+      <button onclick="go('soccer')" class="mt-4 text-blue-700 hover:underline">查看详情 →</button>
+    </div>
+    <div class="card bg-white rounded-2xl p-6 shadow">
+      <h3 class="text-xl font-bold mb-2">健身打卡</h3>
+      <p class="text-slate-600">记录训练与饮食，互相鼓励，见证蜕变。</p>
+      <button onclick="go('fitness')" class="mt-4 text-blue-700 hover:underline">开始打卡 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- 登录/注册 -->
+<section id="auth" class="page max-w-md mx-auto p-6">
+  <h2 class="text-2xl font-bold mb-4">登录 / 注册</h2>
+  <div class="grid gap-2">
+    <input id="email" placeholder="邮箱" class="border p-2 rounded">
+    <input id="password" type="password" placeholder="密码" class="border p-2 rounded">
+    <div class="flex gap-2">
+      <button onclick="register()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded">注册</button>
+      <button onclick="login()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">登录</button>
+      <button onclick="logout()" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded">退出</button>
+    </div>
+    <p class="text-xs text-slate-500">注册后需管理员审核通过才能发帖/评论。</p>
+  </div>
+</section>
+
+<!-- 推理俱乐部 -->
+<section id="logic" class="page max-w-5xl mx-auto p-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-3xl font-bold">推理俱乐部 · 题库</h2>
+  </div>
+  <div class="mt-4 max-w-2xl">
+    <input id="logicTitle" placeholder="题目标题" class="border p-2 rounded w-full mb-2">
+    <textarea id="logicContent" placeholder="题目内容（不需要写答案）" class="border p-2 rounded w-full mb-2"></textarea>
+    <button onclick="addPost('logic')" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">发布题目</button>
+  </div>
+  <div id="posts-logic" class="mt-6 grid gap-4"></div>
+</section>
+
+<!-- 足球俱乐部（介绍为主） -->
+<section id="soccer" class="page max-w-5xl mx-auto p-6">
+  <h2 class="text-3xl font-bold">足球俱乐部</h2>
+  <p class="text-slate-700 mt-2">我们定期组织友谊赛、一起观赛复盘战术。后续也可升级为论坛模式。</p>
+</section>
+
+<!-- 健身打卡（论坛模式） -->
+<section id="fitness" class="page max-w-5xl mx-auto p-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-3xl font-bold">健身打卡 · 论坛</h2>
+  </div>
+  <div class="mt-4 max-w-2xl">
+    <input id="fitTitle" placeholder="打卡主题" class="border p-2 rounded w-full mb-2">
+    <textarea id="fitContent" placeholder="今天训练了什么？饮食如何？" class="border p-2 rounded w-full mb-2"></textarea>
+    <button onclick="addPost('fitness')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded">发布打卡</button>
+  </div>
+  <div id="posts-fitness" class="mt-6 grid gap-4"></div>
+</section>
+
+<!-- 管理员后台 -->
+<section id="admin" class="page max-w-5xl mx-auto p-6">
+  <h2 class="text-2xl font-bold">管理员后台</h2>
+  <div class="mt-6 grid md:grid-cols-2 gap-8">
+    <div>
+      <h3 class="font-semibold">待审核用户</h3>
+      <div id="pendingUsers" class="mt-2"></div>
+    </div>
+    <div>
+      <h3 class="font-semibold">已通过用户</h3>
+      <div id="approvedUsers" class="mt-2"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ================== 配置：如需云端共享，填入你的 Supabase 信息 ================== */
+const SUPABASE_URL = "";      // 例: "https://xxxx.supabase.co"
+const SUPABASE_ANON_KEY = ""; // 例: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+let sb = null; // supabase client
+
+if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+/* ================== 本地存储（作为回退方案） ================== */
+const store = {
+  load() {
+    const u = JSON.parse(localStorage.getItem("users") || "{}");
+    const p = JSON.parse(localStorage.getItem("posts") || "[]");
+    const c = JSON.parse(localStorage.getItem("currentUser") || "null");
+    return { users: u, posts: p, currentUser: c };
+  },
+  save({users, posts, currentUser}) {
+    localStorage.setItem("users", JSON.stringify(users));
+    localStorage.setItem("posts", JSON.stringify(posts));
+    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  },
+  reset() {
+    localStorage.clear();
+  }
+};
+
+let users = {};
+let posts = [];
+let currentUser = null;
+
+/* ================== UI 辅助 ================== */
+const $ = id => document.getElementById(id);
+function go(id) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  $(id).style.display = 'block';
+  if (id === 'logic') renderPosts('logic');
+  if (id === 'fitness') renderPosts('fitness');
+  if (id === 'admin') renderUsers();
+  renderNav();
+}
+function renderNav() {
+  if (currentUser) $('statusBar').textContent = `当前用户：${currentUser.email}${currentUser.is_admin || currentUser.isAdmin ? '（管理员）':''}`;
+  else $('statusBar').textContent = '当前未登录';
+  const isAdminFlag = currentUser && (currentUser.is_admin || currentUser.isAdmin);
+  $('adminMenu').classList.toggle('hidden', !isAdminFlag);
+}
+
+/* ================== 数据加载（云端优先，本地回退） ================== */
+async function bootstrap() {
+  if (sb) {
+    // 云模式：从 auth 获取会话
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      currentUser = { id: session.user.id, email: session.user.email };
+      // 拉取 profile
+      const { data: prof } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+      if (prof) currentUser = {...currentUser, is_admin: prof.is_admin, approved: prof.approved};
+    }
+    await ensureAdminSeed(); // 可选：你可以在 Supabase 控制台手动设置管理员
+  } else {
+    // 本地模式
+    ({ users, posts, currentUser } = store.load());
+    if (!users["admin@dtunion.com"]) {
+      users["admin@dtunion.com"] = { password: "admin123", approved: true, isAdmin: true };
+      store.save({users, posts, currentUser});
+    }
+  }
+  renderNav();
+  go('home');
+}
+
+async function ensureAdminSeed(){ /* 空函数：管理员请在控制台把你的账号 is_admin/approved 置为 true */ }
+
+/* ================== 认证 & 审核 ================== */
+async function register() {
+  const email = $('email').value.trim();
+  const pass = $('password').value;
+  if (!email || !pass) return alert("请输入邮箱和密码");
+
+  if (sb) {
+    const { error, data } = await sb.auth.signUp({ email, password: pass });
+    if (error) return alert(error.message);
+    // 初始化 profile（未审核）
+    await sb.from('profiles').upsert({ id: data.user.id, email, is_admin: false, approved: false });
+    alert("注册成功，等待管理员审核（请联系管理员设置 approved）");
+  } else {
+    if (users[email]) return alert("邮箱已注册");
+    users[email] = { password: pass, approved: false, isAdmin: false };
+    store.save({users, posts, currentUser});
+    alert("注册成功，等待管理员审核");
+  }
+}
+
+async function login() {
+  const email = $('email').value.trim();
+  const pass = $('password').value;
+
+  if (sb) {
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) return alert(error.message);
+    const { data: { user } } = await sb.auth.getUser();
+    const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    if (!prof?.approved) return alert("等待管理员审核中");
+    currentUser = { id:user.id, email, is_admin: prof.is_admin, approved: prof.approved };
+    renderNav();
+    alert("登录成功！");
+    go('home');
+  } else {
+    if (!users[email]) return alert("用户不存在");
+    if (users[email].password !== pass) return alert("密码错误");
+    if (!users[email].approved) return alert("等待管理员审核中");
+    currentUser = { email, ...users[email] };
+    store.save({users, posts, currentUser});
+    renderNav();
+    alert("登录成功！");
+    go('home');
+  }
+}
+
+async function logout() {
+  if (sb) await sb.auth.signOut();
+  currentUser = null;
+  if (!sb) store.save({users, posts, currentUser});
+  renderNav();
+  alert("已退出登录");
+  go('home');
+}
+
+/* ================== 后台（仅管理员） ================== */
+async function renderUsers() {
+  if (!(currentUser && (currentUser.is_admin || currentUser.isAdmin))) {
+    alert("仅管理员可访问");
+    return go('home');
+  }
+  const pending = $('pendingUsers');
+  const approved = $('approvedUsers');
+  pending.innerHTML = ''; approved.innerHTML = '';
+
+  if (sb) {
+    const { data } = await sb.from('profiles').select('id,email,is_admin,approved').order('email');
+    data.forEach(row=>{
+      const html = document.createElement('div');
+      html.className = "p-2 border rounded mt-2 flex justify-between items-center bg-white";
+      if (!row.approved) {
+        html.innerHTML = `<span>${row.email}</span>
+          <div class="flex gap-2">
+            <button class="bg-emerald-600 text-white px-2 py-1 rounded" onclick="approveUser('${row.id}')">通过</button>
+            ${row.is_admin ? '' : `<button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">删除</button>`}
+          </div>`;
+        pending.appendChild(html);
+      } else {
+        html.innerHTML = `<span>${row.email}${row.is_admin?'（管理员）':''}</span>
+          ${row.is_admin ? '' : `<button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">删除</button>`}`;
+        approved.appendChild(html);
+      }
+    });
+  } else {
+    Object.entries(users).forEach(([email, info])=>{
+      const html = document.createElement('div');
+      html.className = "p-2 border rounded mt-2 flex justify-between items-center bg-white";
+      if (!info.approved) {
+        html.innerHTML = `<span>${email}</span>
+          <div class="flex gap-2">
+            <button class="bg-emerald-600 text-white px-2 py-1 rounded" onclick="approveLocal('${email}')">通过</button>
+            <button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="removeLocal('${email}')">删除</button>
+          </div>`;
+        pending.appendChild(html);
+      } else {
+        html.innerHTML = `<span>${email}${info.isAdmin?'（管理员）':''}</span>
+          ${info.isAdmin?'':`<button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="removeLocal('${email}')">删除</button>`}`;
+        approved.appendChild(html);
+      }
+    });
+  }
+}
+
+async function approveUser(uid){
+  await sb.from('profiles').update({approved:true}).eq('id', uid);
+  renderUsers();
+}
+async function removeUser(uid,email){
+  // 只删 profile 记录（演示用）；如需彻底删除，需要 Admin service key，前端不建议直接调用
+  await sb.from('profiles').delete().eq('id', uid);
+  alert(`已删除用户：${email}`);
+  renderUsers();
+}
+function approveLocal(email){
+  users[email].approved = true;
+  store.save({users, posts, currentUser});
+  renderUsers();
+}
+function removeLocal(email){
+  delete users[email];
+  if (currentUser && currentUser.email===email) currentUser=null;
+  store.save({users, posts, currentUser});
+  renderUsers();
+}
+
+/* ================== 帖子 + 评论 ================== */
+async function addPost(type){
+  const title = $(type==='logic'?'logicTitle':'fitTitle').value.trim();
+  const content= $(type==='logic'?'logicContent':'fitContent').value.trim();
+  if (!currentUser) return alert("请先登录");
+  if (!title || !content) return alert("请输入标题和内容");
+
+  if (sb){
+    if (!currentUser.approved) return alert("未审核用户无法发帖");
+    await sb.from('posts').insert({
+      type, title, content,
+      author_id: currentUser.id, author_email: currentUser.email
+    });
+    renderPosts(type);
+  }else{
+    posts.push({ id: Date.now(), type, title, content, author_email: currentUser.email, comments: [], created_at: new Date().toISOString() });
+    store.save({users, posts, currentUser});
+    renderPosts(type);
+  }
+}
+
+async function addComment(postId, type){
+  if (!currentUser) return alert("请先登录");
+  const input = $(`cmt-${postId}`); const body = input.value.trim();
+  if (!body) return;
+
+  if (sb){
+    const { data: post } = await sb.from('posts').select('*').eq('id', postId).maybeSingle();
+    await sb.from('comments').insert({
+      post_id: postId, body,
+      author_id: currentUser.id, author_email: currentUser.email
+    });
+    renderPosts(type);
+  }else{
+    const post = posts.find(p => p.id === postId);
+    post.comments.push({ author_email: currentUser.email, body, created_at: new Date().toLocaleString() });
+    store.save({users, posts, currentUser});
+    renderPosts(type);
+  }
+}
+
+async function renderPosts(type){
+  const box = $(`posts-${type}`); box.innerHTML = '';
+  if (sb){
+    const { data: list } = await sb.from('posts').select('id,type,title,content,author_email,created_at')
+      .eq('type', type).order('id',{ascending:false});
+    for (const p of (list||[])){
+      const { data: cmts } = await sb.from('comments').select('*').eq('post_id', p.id).order('id',{ascending:true});
+      box.appendChild(renderPostCard(p, cmts||[]));
+    }
+  }else{
+    posts.filter(p=>p.type===type).slice().reverse().forEach(p=>{
+      box.appendChild(renderPostCard(
+        { id:p.id, type, title:p.title, content:p.content, author_email:p.author_email, created_at:p.created_at },
+        p.comments.map(c=>({author_email:c.author_email, body:c.body, created_at:c.created_at}))
+      ));
+    });
+  }
+}
+
+function renderPostCard(p, comments){
+  const card = document.createElement('div');
+  card.className = "bg-white rounded-2xl shadow p-5";
+  const ts = p.created_at ? new Date(p.created_at).toLocaleString() : '';
+  card.innerHTML = `
+    <h3 class="text-xl font-bold">${escapeHtml(p.title)}</h3>
+    <p class="mt-2 text-slate-700 whitespace-pre-wrap">${escapeHtml(p.content)}</p>
+    <div class="text-xs text-slate-500 mt-2">作者：${escapeHtml(p.author_email||'未知')} · 时间：${ts}</div>
+    <div class="mt-3 flex items-center gap-2">
+      <input id="cmt-${p.id}" placeholder="写评论…" class="border p-2 rounded w-2/3">
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded" onclick="addComment(${p.id}, '${p.type}')">回复</button>
+    </div>
+    <div class="mt-2 space-y-1">${(comments||[]).map(c=>(
+      `<div class="text-sm text-slate-800">💬 ${escapeHtml(c.author_email)}：${escapeHtml(c.body)} <span class="text-xs text-slate-500">(${c.created_at?new Date(c.created_at).toLocaleString():''})</span></div>`
+    )).join('')}</div>
+  `;
+  return card;
+}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]))}
+
+/* ================== 重置（仅本地模式） ================== */
+function resetSite(){
+  if (sb){ alert("云模式不提供前端重置，请在 Supabase 清表或控制台操作。"); return; }
+  if (!confirm("确认清空本地数据并恢复默认管理员？")) return;
+  store.reset();
+  users = { "admin@dtunion.com": { password: "admin123", approved:true, isAdmin:true } };
+  posts = []; currentUser = null;
+  store.save({users, posts, currentUser});
+  alert("已重置（本地模式）");
+  location.reload();
+}
+
+/* 启动 */
+bootstrap();
+</script>
+</body>
+</html>
