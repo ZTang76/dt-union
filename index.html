@@ -355,25 +355,41 @@ function renderPostCard(p,comments){
 
 /* 后台用户管理 */
 async function renderUsers(){
-  if(!(currentUser&&currentUser.is_admin)){ alert("仅管理员可访问"); return go('home'); }
-  const pending=$('pendingUsers'); const approved=$('approvedUsers');
-  pending.innerHTML=''; approved.innerHTML='';
-  const { data }=await sb.from('profiles').select('id,email,nickname,is_admin,approved,muted').order('email');
+  if(!(currentUser && currentUser.is_admin)){ 
+    alert("仅管理员可访问"); 
+    return go('home'); 
+  }
+  const pending = $('pendingUsers'); 
+  const approved = $('approvedUsers');
+  pending.innerHTML = ''; 
+  approved.innerHTML = '';
+
+  const { data } = await sb.from('profiles')
+    .select('id,email,nickname,is_admin,approved,muted')
+    .order('email');
+
   data.forEach(row=>{
-    const html=document.createElement('div');
-    html.className="p-2 border rounded mt-2 flex justify-between items-center bg-white";
+    const html = document.createElement('div');
+    html.className = "p-2 border rounded mt-2 flex justify-between items-center bg-white";
+
     if(!row.approved){
-      html.innerHTML=`<span>${row.email}${row.nickname?' / '+row.nickname:''}</span>
+      // 待审核用户 → 管理员可通过 / 拒绝（删除）
+      html.innerHTML = `
+        <span>${row.email}${row.nickname ? ' / ' + row.nickname : ''}</span>
         <div class="flex gap-2">
           <button class="bg-emerald-600 text-white px-2 py-1 rounded" onclick="approveUser('${row.id}')">通过</button>
           <button class="bg-rose-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">拒绝</button>
         </div>`;
       pending.appendChild(html);
-    }else{
-      html.innerHTML=`<span>${row.email}${row.is_admin?'（管理员）':''}${row.nickname?' / '+row.nickname:''}${row.muted?'（已禁言）':''}</span>
+
+    } else {
+      // 已通过用户 → 只能禁言 / 解禁
+      html.innerHTML = `
+        <span>${row.email}${row.is_admin ? '（管理员）' : ''}${row.nickname ? ' / ' + row.nickname : ''}${row.muted ? '（已禁言）' : ''}</span>
         <div class="flex gap-2">
-          <button class="bg-rose-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">删除</button>
-          <button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="toggleMute('${row.id}', ${row.muted})">${row.muted?'解除禁言':'禁言'}</button>
+          <button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="toggleMute('${row.id}', ${row.muted})">
+            ${row.muted ? '解除禁言' : '禁言'}
+          </button>
         </div>`;
       approved.appendChild(html);
     }
@@ -387,6 +403,7 @@ bootstrap();
 </script>
 </body>
 </html>
+
 
 
 
