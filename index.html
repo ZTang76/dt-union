@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8" />
-  <title>DT Union · 社团门户</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-  <style>
-    .page{display:none}
-    .glass{backdrop-filter:saturate(140%) blur(8px); background:rgba(255,255,255,.65)}
-    .hero{background:url('https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat}
-    .card{transition:transform .2s ease, box-shadow .2s ease}
-    .card:hover{transform:translateY(-2px); box-shadow:0 12px 25px rgba(0,0,0,.08)}
-  </style>
+<meta charset="UTF-8" />
+<title>DT Union · 社团门户</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  .page{display:none}
+  .glass{backdrop-filter:saturate(140%) blur(8px); background:rgba(255,255,255,.65)}
+  .hero{background:url('https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat}
+  .card{transition:transform .2s ease, box-shadow .2s ease}
+  .card:hover{transform:translateY(-2px); box-shadow:0 12px 25px rgba(0,0,0,.08)}
+</style>
 </head>
 <body class="bg-slate-50 text-slate-900">
 
@@ -22,10 +22,10 @@
     <div class="font-black text-2xl tracking-wide">DT Union</div>
     <div class="hidden md:flex items-center gap-6 text-sm">
       <a href="#" onclick="go('home')" class="hover:text-blue-700">主页</a>
-      <a href="#" onclick="go('about')" class="hover:text-blue-700">关于DTU</a>
       <a href="#" onclick="go('logic')" class="hover:text-blue-700">推理俱乐部</a>
       <a href="#" onclick="go('soccer')" class="hover:text-blue-700">足球俱乐部</a>
       <a href="#" onclick="go('fitness')" class="hover:text-blue-700">健身打卡</a>
+      <a href="#" onclick="go('myposts')" class="hover:text-blue-700">我的帖子</a>
       <a href="#" onclick="go('auth')" class="hover:text-blue-700">登录/注册</a>
       <span id="adminMenu" class="hidden">
         <a href="#" onclick="go('admin')" class="text-amber-700 font-semibold">后台</a>
@@ -51,12 +51,11 @@
   </div>
 
   <!-- 公告栏 -->
-  <div class="max-w-4xl mx-auto px-6 py-10">
-    <h2 class="text-2xl font-bold mb-4">📢 公告栏</h2>
-    <div id="announcementBox" class="space-y-3"></div>
+  <div class="max-w-5xl mx-auto px-6 py-6">
+    <h2 class="text-2xl font-bold mb-3">📢 公告</h2>
+    <div id="posts-announcement" class="space-y-3"></div>
   </div>
 
-  <!-- 三个俱乐部卡片 -->
   <div class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-6">
     <div class="card bg-white rounded-2xl p-6 shadow">
       <h3 class="text-xl font-bold mb-2">推理俱乐部</h3>
@@ -76,7 +75,7 @@
   </div>
 </section>
 
-<!-- 登录/注册 -->
+<!-- 登录/注册 + 修改昵称 -->
 <section id="auth" class="page max-w-md mx-auto p-6">
   <h2 class="text-2xl font-bold mb-4">登录 / 注册</h2>
   <div class="grid gap-2">
@@ -89,55 +88,50 @@
     </div>
     <p class="text-xs text-slate-500">注册后需管理员审核通过才能发帖/评论。</p>
   </div>
+
+  <!-- 修改昵称 -->
+  <div id="nicknameBox" class="mt-6 hidden">
+    <h3 class="text-lg font-semibold mb-2">修改昵称</h3>
+    <input id="nicknameInput" placeholder="输入新昵称" class="border p-2 rounded w-full mb-2">
+    <button onclick="updateNickname()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">保存昵称</button>
+    <p class="text-xs text-slate-500 mt-1">昵称将显示在发帖和评论中。</p>
+  </div>
 </section>
+
 <!-- 推理俱乐部 -->
 <section id="logic" class="page max-w-5xl mx-auto p-6">
-  <div class="flex items-center justify-between">
-    <h2 class="text-3xl font-bold">推理俱乐部 · 题库</h2>
-  </div>
-
-  <!-- 发帖框 -->
+  <h2 class="text-3xl font-bold">推理俱乐部 · 题库</h2>
   <div class="mt-4 max-w-2xl">
     <input id="logicTitle" placeholder="题目标题" class="border p-2 rounded w-full mb-2">
     <textarea id="logicContent" placeholder="题目内容（不需要写答案）" class="border p-2 rounded w-full mb-2"></textarea>
     <button onclick="addPost('logic')" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">发布题目</button>
-    <p class="text-xs text-slate-500 mt-1">* 仅审核通过的用户可发帖与评论</p>
   </div>
-
-  <!-- 帖子列表 -->
   <div id="posts-logic" class="mt-6 grid gap-4"></div>
 </section>
 
-<!-- 足球俱乐部（介绍为主） -->
+<!-- 足球俱乐部 -->
 <section id="soccer" class="page max-w-5xl mx-auto p-6">
   <h2 class="text-3xl font-bold">足球俱乐部</h2>
-  <div class="mt-4 space-y-3 text-slate-700">
-    <p>我们定期组织友谊赛与训练课；也会一起观赛、复盘战术，欢迎零基础同学加入。</p>
-    <ul class="list-disc list-inside">
-      <li>每周末校园球场友谊赛</li>
-      <li>战术课堂与录像复盘</li>
-      <li>装备/位置/跑位入门分享</li>
-    </ul>
-  </div>
+  <p class="text-slate-700 mt-2">我们定期组织友谊赛、一起观赛复盘战术。后续也可升级为论坛模式。</p>
 </section>
 
-<!-- 健身打卡（论坛模式） -->
+<!-- 健身打卡 -->
 <section id="fitness" class="page max-w-5xl mx-auto p-6">
-  <div class="flex items-center justify-between">
-    <h2 class="text-3xl font-bold">健身打卡 · 论坛</h2>
-  </div>
-
-  <!-- 发帖框 -->
+  <h2 class="text-3xl font-bold">健身打卡 · 论坛</h2>
   <div class="mt-4 max-w-2xl">
     <input id="fitTitle" placeholder="打卡主题" class="border p-2 rounded w-full mb-2">
     <textarea id="fitContent" placeholder="今天训练了什么？饮食如何？" class="border p-2 rounded w-full mb-2"></textarea>
     <button onclick="addPost('fitness')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded">发布打卡</button>
-    <p class="text-xs text-slate-500 mt-1">* 仅审核通过的用户可发帖与评论</p>
   </div>
-
-  <!-- 帖子列表 -->
   <div id="posts-fitness" class="mt-6 grid gap-4"></div>
 </section>
+
+<!-- 我的帖子 -->
+<section id="myposts" class="page max-w-5xl mx-auto p-6">
+  <h2 class="text-3xl font-bold">我的帖子</h2>
+  <div id="posts-mine" class="mt-6 grid gap-4"></div>
+</section>
+
 <!-- 管理员后台 -->
 <section id="admin" class="page max-w-5xl mx-auto p-6">
   <h2 class="text-2xl font-bold">管理员后台</h2>
@@ -152,213 +146,317 @@
     </div>
   </div>
 
-  <div class="mt-10">
-    <h3 class="font-semibold mb-2">公告管理</h3>
-    <textarea id="newAnnouncement" placeholder="输入公告内容..." class="border p-2 rounded w-full mb-2"></textarea>
-    <button onclick="addAnnouncement()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded">发布公告</button>
-    <div id="announcementManage" class="mt-4 space-y-2"></div>
+  <!-- 发布公告 -->
+  <div class="mt-8">
+    <h3 class="font-semibold">发布公告</h3>
+    <input id="annTitle" placeholder="公告标题" class="border p-2 rounded w-full mb-2">
+    <textarea id="annContent" placeholder="公告内容" class="border p-2 rounded w-full mb-2"></textarea>
+    <button onclick="addAnnouncement()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded">发布公告</button>
   </div>
 </section>
 
-<!-- 关于 DTU -->
-<section id="about" class="page max-w-5xl mx-auto p-6">
-  <h2 class="text-3xl font-bold mb-4">关于 DTU</h2>
-
-  <!-- 社团介绍 -->
-  <div class="mb-6">
-    <p class="text-slate-700 leading-relaxed">
-      DT Union 成立于 2024 年伦敦安大略，以“Diverse Talent”为精神，旨在让学生聚在一起，探索兴趣、发挥才能并互相支持。
-      现有推理、足球、健身三大社团，吸引了来自英国、加拿大、中国等地的成员。
-    </p>
-  </div>
-
-  <!-- 文化（中英文切换） -->
-  <div class="mb-6">
-    <div class="flex items-center justify-between">
-      <h3 class="text-xl font-semibold">文化</h3>
-      <button onclick="toggleCultureLang()" class="text-sm text-blue-700 hover:underline">切换语言</button>
-    </div>
-    <p id="cultureText" class="mt-2 text-slate-700 leading-relaxed">
-      We are excited to introduce DT Union to the community!  
-      Founded in 2024 in London, Ontario, DT Union began with a simple vision: to create a space where students could come together, explore their passions, and support each other’s growth.  
-      ...（英文内容省略，完整见之前文本）
-    </p>
-  </div>
-
-  <!-- 组织治理架构 -->
-  <div>
-    <h3 class="text-xl font-semibold mb-2">组织治理架构</h3>
-    <p class="text-slate-700 mb-4">DT Union 的治理架构强调透明、合作与高效。以下为我们的正式组织结构图：</p>
-    <div class="flex justify-center">
-      <img src="assets/dtu-structure.png" alt="DTU 组织治理架构" class="rounded-lg shadow-lg max-w-full h-auto">
-    </div>
-  </div>
-</section>
-
-<!-- ================== 脚本 ================== -->
 <script>
+/* Supabase 配置 */
 const SUPABASE_URL = "https://pagpdgzuvikpdbjupqql.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhZ3BkZ3p1dmlrcGRianVwcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNDQyNzgsImV4cCI6MjA3MzgyMDI3OH0.t7OuWP_leNs74XmXVH2ilg21PqetYEk7NJjPwiF_1lY";
-let sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-let currentUser = null;
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const $ = id => document.getElementById(id);
-function go(id) {
-  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-  $(id).style.display = 'block';
-  if (id === 'logic') renderPosts('logic');
-  if (id === 'fitness') renderPosts('fitness');
-  if (id === 'admin') renderUsers(), renderAnnouncements();
+let currentUser=null;
+const $=id=>document.getElementById(id);
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+
+/* 页面切换 */
+function go(id){
+  if((id==='logic'||id==='fitness'||id==='admin'||id==='myposts')&&!currentUser){
+    alert("请先登录后再访问该页面");
+    return go('auth');
+  }
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  $(id).style.display='block';
+  if(id==='logic') renderPosts('logic');
+  if(id==='fitness') renderPosts('fitness');
+  if(id==='admin') renderUsers();
+  if(id==='myposts') renderMyPosts();
+  if(id==='home') renderAnnouncements();
   renderNav();
 }
-function renderNav() {
-  if (currentUser) $('statusBar').textContent = `当前用户：${currentUser.nickname || currentUser.email}${currentUser.is_admin ? '（管理员）':''}`;
-  else $('statusBar').textContent = '当前未登录';
-  $('adminMenu').classList.toggle('hidden', !(currentUser && currentUser.is_admin));
+
+  /* 导航栏状态 */
+function renderNav(){
+  if(currentUser){
+    const name=currentUser.nickname||currentUser.email;
+    $('statusBar').textContent=`当前用户：${name}${currentUser.is_admin?'（管理员）':''}${currentUser.muted?'（已禁言）':''}`;
+  }else{
+    $('statusBar').textContent='当前未登录';
+  }
+  $('adminMenu').classList.toggle('hidden',!(currentUser&&currentUser.is_admin));
+  const nickBox=$('nicknameBox'); if(nickBox) nickBox.style.display=currentUser?'block':'none';
 }
 
-// 注册
-async function register() {
-  const email = $('email').value.trim();
-  const pass = $('password').value;
-  if (!email || !pass) return alert("请输入邮箱和密码");
-  const { error } = await sb.auth.signUp({ email, password: pass });
-  if (error) return alert(error.message);
-  alert("注册成功，请等待管理员审核。");
-}
-
-// 登录
-async function login() {
-  const email = $('email').value.trim();
-  const pass = $('password').value;
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) return alert(error.message);
-  const { data: { user } } = await sb.auth.getUser();
-  const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
-  if (!prof?.approved) return alert("等待管理员审核中");
-  currentUser = { id: user.id, email: user.email, is_admin: prof.is_admin, nickname: prof.nickname };
+/* 启动 */
+async function bootstrap(){
+  const { data:{ session } }=await sb.auth.getSession();
+  if(session?.user){
+    const { data: prof }=await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
+    if(prof){
+      currentUser={ id:prof.id,email:prof.email,nickname:prof.nickname,is_admin:prof.is_admin,approved:prof.approved,muted:prof.muted };
+    }
+  }
   renderNav(); go('home');
 }
-async function logout(){ await sb.auth.signOut(); currentUser=null; renderNav(); go('home'); }
 
-// 渲染用户（审核/禁言）
-async function renderUsers(){
-  const { data } = await sb.from('profiles').select('id,email,is_admin,approved,muted').order('email');
-  const pending=$('pendingUsers'), approved=$('approvedUsers');
-  pending.innerHTML=''; approved.innerHTML='';
-  data.forEach(u=>{
-    const div=document.createElement('div');
-    div.className="p-2 border rounded bg-white flex justify-between items-center";
-    if(!u.approved){
-      div.innerHTML=`<span>${u.email}</span>
-        <button class="bg-emerald-600 text-white px-2 py-1 rounded" onclick="approveUser('${u.id}')">通过</button>
-        <button class="bg-rose-600 text-white px-2 py-1 rounded" onclick="removeUser('${u.id}')">拒绝</button>`;
-      pending.appendChild(div);
-    } else {
-      div.innerHTML=`<span>${u.email}${u.is_admin?'（管理员）':''}${u.muted?'（禁言）':''}</span>
-        ${!u.is_admin?`<button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="toggleMute('${u.id}',${u.muted})">${u.muted?'解禁':'禁言'}</button>`:''}`;
-      approved.appendChild(div);
-    }
-  });
+/* 注册/登录/退出/昵称 */
+async function register(){
+  const email=$('email').value.trim(), pass=$('password').value;
+  if(!email||!pass) return alert("请输入邮箱和密码");
+  const { error }=await sb.auth.signUp({ email,password:pass });
+  if(error) return alert(error.message);
+  alert("注册成功，请到邮箱确认后再登录");
 }
-async function approveUser(uid){await sb.from('profiles').update({approved:true}).eq('id',uid);renderUsers();}
-async function removeUser(uid){await sb.from('profiles').delete().eq('id',uid);renderUsers();}
-async function toggleMute(uid,cur){await sb.from('profiles').update({muted:!cur}).eq('id',uid);renderUsers();}
+async function login(){
+  const email=$('email').value.trim(), pass=$('password').value;
+  const { error }=await sb.auth.signInWithPassword({ email,password:pass });
+  if(error) return alert(error.message);
+  const { data:{ user } }=await sb.auth.getUser();
+  await sb.from('profiles').upsert({ id:user.id,email:user.email }).select().single();
+  const { data: prof }=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+  if(!prof?.approved) return alert("等待管理员审核中");
+  currentUser={ id:user.id,email:user.email,nickname:prof.nickname,is_admin:prof.is_admin,approved:prof.approved,muted:prof.muted };
+  renderNav(); alert("登录成功"); go('home');
+}
+async function logout(){ await sb.auth.signOut(); currentUser=null; renderNav(); go('home'); }
+async function updateNickname(){
+  if(!currentUser) return alert("请先登录");
+  const nick=$('nicknameInput').value.trim(); if(!nick) return alert("昵称不能为空");
+  await sb.from('profiles').update({ nickname:nick }).eq('id',currentUser.id);
+  currentUser.nickname=nick; renderNav(); alert("昵称已更新！");
+}
 
-// 帖子+评论（简化带折叠）
+/* 发帖/评论/删除/置顶/公告 */
 async function addPost(type){
+  if(!currentUser) return alert("请先登录");
+  if(currentUser.muted) return alert("你已被禁言，无法发帖");
   const title=$(type==='logic'?'logicTitle':'fitTitle').value.trim();
   const content=$(type==='logic'?'logicContent':'fitContent').value.trim();
-  if(!currentUser) return alert("请先登录");
-  if(!title||!content) return alert("请输入内容");
-  await sb.from('posts').insert({type,title,content,author_id:currentUser.id,author_email:currentUser.email});
+  if(!title||!content) return alert("请输入标题和内容");
+  await sb.from('posts').insert({ type,title,content,author_id:currentUser.id,author_email:currentUser.email,author_nickname:currentUser.nickname,pinned:false });
+  if(type==='logic'){ $('logicTitle').value=''; $('logicContent').value=''; } else { $('fitTitle').value=''; $('fitContent').value=''; }
   renderPosts(type);
 }
 async function addComment(postId,type){
   if(!currentUser) return alert("请先登录");
-  const body=$(`cmt-${postId}`).value.trim();
-  if(!body) return;
-  await sb.from('comments').insert({post_id:postId,body,author_id:currentUser.id,author_email:currentUser.email});
+  if(currentUser.muted) return alert("你已被禁言，无法评论");
+  const input=$(`cmt-${postId}`); const body=input.value.trim(); if(!body) return;
+  await sb.from('comments').insert({ post_id:postId,body,author_id:currentUser.id,author_email:currentUser.email,author_nickname:currentUser.nickname });
+  input.value=''; renderPosts(type);
+}
+async function deletePost(postId,type){
+  if(!confirm("确认删除该帖子？")) return;
+  await sb.from('posts').delete().eq('id',postId);
+  await sb.from('comments').delete().eq('post_id',postId);
   renderPosts(type);
 }
+async function deleteComment(cmtId,type){
+  if(!confirm("确认删除该评论？")) return;
+  await sb.from('comments').delete().eq('id',cmtId);
+  renderPosts(type);
+}
+async function togglePin(postId,currentState,type){
+  await sb.from('posts').update({ pinned:!currentState }).eq('id',postId);
+  renderPosts(type);
+}
+async function addAnnouncement(){
+  if(!currentUser?.is_admin) return alert("仅管理员可发布公告");
+  const title=$('annTitle').value.trim(), content=$('annContent').value.trim();
+  if(!title||!content) return alert("请输入完整内容");
+  await sb.from('posts').insert({ type:'announcement',title,content,author_id:currentUser.id,author_email:currentUser.email,author_nickname:currentUser.nickname });
+  $('annTitle').value=''; $('annContent').value='';
+  renderAnnouncements();
+}
+
+/* 渲染帖子 */
 async function renderPosts(type){
+  if(!currentUser){ alert("请先登录才能查看帖子"); return go('auth'); }
   const box=$(`posts-${type}`); box.innerHTML='';
-  const { data:list }=await sb.from('posts').select('id,title,content,author_email,created_at').eq('type',type).order('id',{ascending:false});
-  for(const p of list||[]){
-    const { data:cmts }=await sb.from('comments').select('*').eq('post_id',p.id).order('id',{ascending:true});
+  const { data:list }=await sb.from('posts')
+    .select('id,type,title,content,author_email,author_nickname,author_id,created_at,pinned')
+    .eq('type',type)
+    .order('pinned',{ascending:false})
+    .order('id',{ascending:false});
+  for(const p of (list||[])){
+    const { data:cmts }=await sb.from('comments')
+      .select('id,post_id,body,author_email,author_nickname,author_id,created_at')
+      .eq('post_id',p.id)
+      .order('id');
     box.appendChild(renderPostCard(p,cmts||[]));
   }
 }
-function renderPostCard(p,comments){
-  const card=document.createElement('div'); card.className="bg-white rounded-2xl shadow p-5";
-  const ts=new Date(p.created_at).toLocaleString();
-  card.innerHTML=`
-    <h3 class="text-xl font-bold">${escapeHtml(p.title)}</h3>
-    <p class="mt-2 text-slate-700 whitespace-pre-wrap line-clamp-3" id="content-${p.id}">${escapeHtml(p.content)}</p>
-    <button class="text-blue-600 text-sm mt-1" onclick="togglePost(${p.id})">展开/收起</button>
-    <div class="text-xs text-slate-500 mt-2">作者：${escapeHtml(p.author_email)} · 时间：${ts}</div>
-    <div class="mt-3 flex items-center gap-2">
-      <input id="cmt-${p.id}" placeholder="写评论…" class="border p-2 rounded w-2/3">
-      <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded" onclick="addComment(${p.id}, '${p.type}')">回复</button>
-    </div>
-    <div id="cmts-${p.id}" class="mt-2 hidden space-y-1">
-      ${(comments||[]).map(c=>`<div class="text-sm text-slate-800">💬 ${escapeHtml(c.author_email)}：${escapeHtml(c.body)}</div>`).join('')}
-    </div>
-    <button class="text-blue-600 text-sm mt-1" onclick="expandComments(${p.id})">展开/收起评论</button>`;
-  return card;
-}
-function togglePost(pid){const el=$(`content-${pid}`);el.classList.toggle("line-clamp-3");}
-function expandComments(pid){$(`cmts-${pid}`).classList.toggle("hidden");}
-function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
-
-// 公告
-async function addAnnouncement(){
-  const txt=$('newAnnouncement').value.trim();
-  if(!txt) return;
-  await sb.from('announcements').insert({content:txt,author:currentUser.email});
-  $('newAnnouncement').value=''; renderAnnouncements();
+async function renderMyPosts(){
+  if(!currentUser){ alert("请先登录"); return go('auth'); }
+  const box=$('posts-mine'); box.innerHTML='';
+  const { data:list }=await sb.from('posts')
+    .select('id,type,title,content,author_email,author_nickname,author_id,created_at,pinned')
+    .eq('author_id',currentUser.id)
+    .order('id',{ascending:false});
+  for(const p of (list||[])){
+    const { data:cmts }=await sb.from('comments')
+      .select('id,post_id,body,author_email,author_nickname,author_id,created_at')
+      .eq('post_id',p.id)
+      .order('id');
+    box.appendChild(renderPostCard(p,cmts||[]));
+  }
 }
 async function renderAnnouncements(){
-  const { data:list }=await sb.from('announcements').select('*').order('id',{ascending:false});
-  const box=$('announcementBox'); box.innerHTML='';
-  const manage=$('announcementManage'); manage.innerHTML='';
-  (list||[]).forEach(a=>{
+  const box=$('posts-announcement'); box.innerHTML='';
+  const { data:list }=await sb.from('posts')
+    .select('id,title,content,author_email,author_nickname,created_at')
+    .eq('type','announcement')
+    .order('id',{ascending:false});
+  for(const p of (list||[])){
     const div=document.createElement('div');
-    div.className="p-3 bg-white rounded shadow";
-    div.textContent=`${a.content} —— ${a.author}`;
+    div.className="bg-yellow-50 border border-yellow-200 rounded-lg p-4";
+    div.innerHTML=`
+      <h3 class="font-semibold text-lg">📌 ${escapeHtml(p.title)}</h3>
+      <p class="mt-1 text-slate-700 whitespace-pre-wrap">${escapeHtml(p.content)}</p>
+      <div class="text-xs text-slate-500 mt-1">发布人：${escapeHtml(p.author_nickname||p.author_email)} · ${new Date(p.created_at).toLocaleString()}</div>
+    `;
     box.appendChild(div);
-    const m=document.createElement('div');
-    m.className="p-2 border rounded flex justify-between items-center";
-    m.innerHTML=`<span>${a.content}</span>
-      <button class="text-red-600" onclick="deleteAnnouncement(${a.id})">删除</button>`;
-    manage.appendChild(m);
+  }
+}
+
+/* 渲染帖子卡片 */
+function renderPostCard(p, comments){
+  const card = document.createElement('div');
+  card.className = "bg-white rounded-2xl shadow p-5";
+  const ts = p.created_at ? new Date(p.created_at).toLocaleString() : '';
+  const isAdmin = currentUser && (currentUser.is_admin || currentUser.isAdmin);
+  const canDeletePost = currentUser && (isAdmin || currentUser.id === p.author_id);
+
+  // 内容预览（前 100 字）
+  const preview = p.content.length > 100 ? p.content.slice(0,100) + '...' : p.content;
+
+  // 评论折叠：默认显示 3 条
+  const commentsHtml = (comments||[]).slice(0,3).map(c=>{
+    const canDeleteCmt = currentUser && (isAdmin || currentUser.id === c.author_id);
+    return `<div class="text-sm text-slate-800">
+              💬 ${escapeHtml(c.author_nickname||c.author_email)}：${escapeHtml(c.body)} 
+              <span class="text-xs text-slate-500">(${c.created_at?new Date(c.created_at).toLocaleString():''})</span>
+              ${canDeleteCmt?`<button class="text-rose-600 text-xs ml-2" onclick="deleteComment(${c.id}, '${p.type}')">删除</button>`:''}
+            </div>`;
+  }).join('');
+  const hasMore = (comments||[]).length > 3;
+
+  card.innerHTML = `
+    <h3 class="text-xl font-bold">${p.pinned?"⭐ ":""}${escapeHtml(p.title)}</h3>
+
+    <!-- 预览区 -->
+    <div id="preview-${p.id}" class="mt-2 text-slate-700 whitespace-pre-wrap">${escapeHtml(preview)}</div>
+
+    <!-- 全文+回复区（默认隐藏） -->
+    <div id="full-${p.id}" class="hidden">
+      <p class="mt-2 text-slate-700 whitespace-pre-wrap">${escapeHtml(p.content)}</p>
+      <div class="text-xs text-slate-500 mt-2">作者：${escapeHtml(p.author_nickname||p.author_email||'未知')} · 时间：${ts}</div>
+      <div class="mt-3 flex items-center gap-2">
+        ${p.type!=='announcement' ? `
+          <input id="cmt-${p.id}" placeholder="写评论…" class="border p-2 rounded w-2/3">
+          <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded" onclick="addComment(${p.id}, '${p.type}')">回复</button>
+        `:''}
+        ${canDeletePost?`<button class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded" onclick="deletePost(${p.id}, '${p.type}')">删帖</button>`:''}
+        ${isAdmin&&p.type!=='announcement'?`<button class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded" onclick="togglePin(${p.id}, ${p.pinned}, '${p.type}')">${p.pinned?'取消置顶':'置顶'}</button>`:''}
+      </div>
+      <div id="comments-${p.id}" class="mt-2 space-y-1">${commentsHtml}</div>
+      ${hasMore?`<button class="text-blue-600 text-xs mt-1" onclick="expandComments(${p.id}, '${p.type}')">展开更多评论</button>`:''}
+    </div>
+
+    <!-- 展开/收起按钮 -->
+    <button id="toggle-${p.id}" class="mt-3 text-blue-600 hover:underline text-sm" onclick="togglePost(${p.id})">展开全文</button>
+  `;
+  return card;
+}
+
+
+  // 展开/收起帖子
+function togglePost(postId){
+  const previewDiv = document.getElementById(`preview-${postId}`);
+  const fullDiv = document.getElementById(`full-${postId}`);
+  const btn = document.getElementById(`toggle-${postId}`);
+  const isHidden = fullDiv.classList.contains("hidden");
+  if(isHidden){
+    previewDiv.classList.add("hidden");
+    fullDiv.classList.remove("hidden");
+    btn.textContent = "收起";
+  }else{
+    previewDiv.classList.remove("hidden");
+    fullDiv.classList.add("hidden");
+    btn.textContent = "展开全文";
+  }
+}
+
+// 展开更多评论
+async function expandComments(postId, type){
+  const { data: cmts } = await sb.from('comments').select('*').eq('post_id', postId).order('id',{ascending:true});
+  const isAdmin = currentUser && (currentUser.is_admin || currentUser.isAdmin);
+  const commentsHtml = (cmts||[]).map(c=>{
+    const canDeleteCmt = currentUser && (isAdmin || currentUser.id === c.author_id);
+    return `<div class="text-sm text-slate-800">
+              💬 ${escapeHtml(c.author_nickname||c.author_email)}：${escapeHtml(c.body)} 
+              <span class="text-xs text-slate-500">(${c.created_at?new Date(c.created_at).toLocaleString():''})</span>
+              ${canDeleteCmt?`<button class="text-rose-600 text-xs ml-2" onclick="deleteComment(${c.id}, '${type}')">删除</button>`:''}
+            </div>`;
+  }).join('');
+  document.getElementById(`comments-${postId}`).innerHTML = commentsHtml;
+}
+
+/* 后台用户管理 */
+async function renderUsers(){
+  if(!(currentUser && currentUser.is_admin)){ 
+    alert("仅管理员可访问"); 
+    return go('home'); 
+  }
+  const pending = $('pendingUsers'); 
+  const approved = $('approvedUsers');
+  pending.innerHTML = ''; 
+  approved.innerHTML = '';
+
+  const { data } = await sb.from('profiles')
+    .select('id,email,nickname,is_admin,approved,muted')
+    .order('email');
+
+  data.forEach(row=>{
+    const html = document.createElement('div');
+    html.className = "p-2 border rounded mt-2 flex justify-between items-center bg-white";
+
+    if(!row.approved){
+      // 待审核用户 → 管理员可通过 / 拒绝（删除）
+      html.innerHTML = `
+        <span>${row.email}${row.nickname ? ' / ' + row.nickname : ''}</span>
+        <div class="flex gap-2">
+          <button class="bg-emerald-600 text-white px-2 py-1 rounded" onclick="approveUser('${row.id}')">通过</button>
+          <button class="bg-rose-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">拒绝</button>
+        </div>`;
+      pending.appendChild(html);
+
+    } else {
+      // 已通过用户 → 只能禁言 / 解禁
+      html.innerHTML = `
+        <span>${row.email}${row.is_admin ? '（管理员）' : ''}${row.nickname ? ' / ' + row.nickname : ''}${row.muted ? '（已禁言）' : ''}</span>
+        <div class="flex gap-2">
+          <button class="bg-slate-600 text-white px-2 py-1 rounded" onclick="toggleMute('${row.id}', ${row.muted})">
+            ${row.muted ? '解除禁言' : '禁言'}
+          </button>
+        </div>`;
+      approved.appendChild(html);
+    }
   });
 }
-async function deleteAnnouncement(id){await sb.from('announcements').delete().eq('id',id);renderAnnouncements();}
+async function approveUser(uid){ await sb.from('profiles').update({approved:true}).eq('id',uid); renderUsers(); }
+async function removeUser(uid,email){ await sb.from('profiles').delete().eq('id',uid); alert(`已删除用户：${email}`); renderUsers(); }
+async function toggleMute(uid,state){ await sb.from('profiles').update({muted:!state}).eq('id',uid); renderUsers(); }
 
-// 文化切换
-let cultureLang='en';
-function toggleCultureLang(){
-  const en=`We are excited to introduce DT Union to the community!...`; // 英文完整文本
-  const zh=`我们很高兴向大家介绍 DT Union!...`; // 中文翻译版本
-  $('cultureText').textContent = cultureLang==='en'? zh: en;
-  cultureLang=cultureLang==='en'?'zh':'en';
-}
-
-// 启动
-(async function bootstrap(){
-  const { data:{session} }=await sb.auth.getSession();
-  if(session?.user){
-    const { data:prof }=await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
-    currentUser={ id:session.user.id, email:session.user.email, is_admin:prof?.is_admin, nickname:prof?.nickname };
-  }
-  renderNav(); go('home');
-})();
+bootstrap();
 </script>
 </body>
 </html>
-
-
 
 
 
