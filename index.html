@@ -207,50 +207,44 @@ async function bootstrap() {
 async function ensureAdminSeed(){ /* 空函数：管理员请在控制台把你的账号 is_admin/approved 置为 true */ }
 
 /* ================== 认证 & 审核 ================== */
+// 注册：只创建账户，不往 profiles 写
 async function register() {
   const email = $('email').value.trim();
   const pass = $('password').value;
   if (!email || !pass) return alert("请输入邮箱和密码");
 
-  if (sb) {
-    const { error, data } = await sb.auth.signUp({ email, password: pass });
-    if (error) return alert(error.message);
-    // 初始化 profile（未审核）
-    await sb.from('profiles').upsert({ id: data.user.id, email, is_admin: false, approved: false });
-    alert("注册成功，等待管理员审核（请联系管理员设置 approved）");
-  } else {
-    if (users[email]) return alert("邮箱已注册");
-    users[email] = { password: pass, approved: false, isAdmin: false };
-    store.save({users, posts, currentUser});
-    alert("注册成功，等待管理员审核");
-  }
+  const { error } = await sb.auth.signUp({ email, password: pass }); // 密码>=6位
+  if (error) return alert(error.message);
+
+  alert("注册成功！如开启邮箱验证，请到邮箱确认后再登录。");
 }
 
+// 登录：登录成功后，再 upsert 自己的 profile（无则新建）
 async function login() {
   const email = $('email').value.trim();
   const pass = $('password').value;
 
-  if (sb) {
-    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-    if (error) return alert(error.message);
-    const { data: { user } } = await sb.auth.getUser();
-    const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
-    if (!prof?.approved) return alert("等待管理员审核中");
-    currentUser = { id:user.id, email, is_admin: prof.is_admin, approved: prof.approved };
-    renderNav();
-    alert("登录成功！");
-    go('home');
-  } else {
-    if (!users[email]) return alert("用户不存在");
-    if (users[email].password !== pass) return alert("密码错误");
-    if (!users[email].approved) return alert("等待管理员审核中");
-    currentUser = { email, ...users[email] };
-    store.save({users, posts, currentUser});
-    renderNav();
-    alert("登录成功！");
-    go('home');
-  }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) return alert(error.message);
+
+  const { data: { user } } = await sb.auth.getUser();
+
+  // ★ 关键：以 authenticated 身份写 profiles（此时不会 401）
+  await sb.from('profiles')
+    .upsert({ id: user.id, email: user.email })
+    .select()
+    .single();
+
+  // 读取审核 / 管理员状态
+  const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  if (!prof?.approved) return alert("等待管理员审核中");
+
+  currentUser = { id: user.id, email: user.email, is_admin: prof.is_admin, approved: prof.approved };
+  renderNav();
+  alert("登录成功！");
+  go('home');
 }
+
 
 async function logout() {
   if (sb) await sb.auth.signOut();
@@ -428,5 +422,6 @@ bootstrap();
 </script>
 </body>
 </html>
+
 
 
