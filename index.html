@@ -22,10 +22,10 @@
     <div class="font-black text-2xl tracking-wide">DT Union</div>
     <div class="hidden md:flex items-center gap-6 text-sm">
       <a href="#" onclick="go('home')" class="hover:text-blue-700">主页</a>
+      <a href="#" onclick="go('about')" class="hover:text-blue-700">关于我们</a>
       <a href="#" onclick="go('logic')" class="hover:text-blue-700">推理俱乐部</a>
       <a href="#" onclick="go('soccer')" class="hover:text-blue-700">足球俱乐部</a>
       <a href="#" onclick="go('fitness')" class="hover:text-blue-700">健身打卡</a>
-      <a href="#" onclick="go('myposts')" class="hover:text-blue-700">我的帖子</a>
       <a href="#" onclick="go('auth')" class="hover:text-blue-700">登录/注册</a>
       <span id="adminMenu" class="hidden">
         <a href="#" onclick="go('admin')" class="text-amber-700 font-semibold">后台</a>
@@ -98,6 +98,83 @@
   </div>
 </section>
 
+  <!-- 关于我们 -->
+<section id="about" class="page max-w-5xl mx-auto p-6">
+  <!-- 文本介绍 -->
+  <div class="bg-white rounded-2xl shadow p-6 mb-10">
+    <h2 class="text-3xl font-bold mb-4">关于我们</h2>
+    <p class="text-slate-700 leading-relaxed">
+      We are excited to introduce DT Union to the community!<br><br>
+      Founded in 2024 in London, Ontario, DT Union began with a simple vision: to create a space where students could come together, explore their passions, and support each other’s growth.
+      The name DT reflects both our origin and our spirit: Diverse Talent. We believe that every student has unique strengths and interests, and our mission is to provide a platform where these talents can flourish.
+      <br><br>
+      Unlike traditional clubs, DT Union is built on openness and flexibility. When you join one of our clubs, you are free to participate in activities across all others. This allows every member to discover new passions, broaden their horizons, and experience a wide variety of interests.
+      <br><br>
+      Today, DT Union proudly hosts three active clubs:
+      <br>⚡ Mystery Club – for those who love puzzles, problem-solving, and detective stories
+      <br>⚽ Football Club – bringing students together on the field for teamwork and competition
+      <br>💪 Fitness Club – supporting a healthy lifestyle and personal growth through training and motivation
+      <br><br>
+      Our members now come from the UK, Canada, China, and beyond, creating a truly international and cross-cultural community. Here, students not only develop their talents but also connect through meaningful cultural exchange.
+      <br><br>
+      This is just the beginning. Our goal is to grow into a vibrant community that welcomes all students with diverse interests, whether in sports, arts, or academics. We invite you to join us, share your passions, and help shape the future of DT Union. Together, we are building more than clubs — we are building a community.
+    </p>
+  </div>
+
+  <!-- 分割线 -->
+  <hr class="my-10 border-slate-300">
+
+  <!-- 组织架构（卡片式） -->
+  <div class="bg-white rounded-2xl shadow p-6">
+    <h3 class="text-2xl font-bold mb-4">组织架构</h3>
+    <p class="text-slate-600 mb-6">DT Union 的行政架构如下：</p>
+
+    <!-- President -->
+    <div class="flex justify-center mb-6">
+      <div class="bg-blue-900 text-white font-semibold px-6 py-3 rounded-xl shadow">President</div>
+    </div>
+
+    <!-- Vice President -->
+    <div class="flex justify-center mb-6">
+      <div class="bg-blue-700 text-white font-semibold px-6 py-2 rounded-xl shadow">Vice President</div>
+    </div>
+
+    <!-- Co-Presidents & Associate VP -->
+    <div class="grid md:grid-cols-5 gap-4 mb-6 text-center">
+      <div class="bg-blue-500 text-white px-4 py-2 rounded-xl shadow">Associate Vice President</div>
+      <div class="bg-blue-500 text-white px-4 py-2 rounded-xl shadow">Operation Co-President</div>
+      <div class="bg-blue-500 text-white px-4 py-2 rounded-xl shadow">Marketing Co-President</div>
+      <div class="bg-blue-500 text-white px-4 py-2 rounded-xl shadow">Finance Co-President</div>
+      <div class="bg-blue-500 text-white px-4 py-2 rounded-xl shadow">IT Co-President</div>
+    </div>
+
+    <!-- Executive Directors -->
+    <div class="grid md:grid-cols-5 gap-4 mb-6 text-center">
+      <div class="bg-blue-400 text-white px-4 py-2 rounded-lg shadow">Executive Director</div>
+      <div class="bg-blue-400 text-white px-4 py-2 rounded-lg shadow">Executive Director</div>
+      <div class="bg-blue-400 text-white px-4 py-2 rounded-lg shadow">Executive Director</div>
+      <div class="bg-blue-400 text-white px-4 py-2 rounded-lg shadow">Executive Director</div>
+      <div class="bg-blue-400 text-white px-4 py-2 rounded-lg shadow">Executive Director</div>
+    </div>
+
+    <!-- Directors -->
+    <div class="grid md:grid-cols-5 gap-4 mb-6 text-center">
+      <div class="bg-blue-200 px-4 py-2 rounded-lg shadow">Club Director</div>
+      <div class="bg-blue-200 px-4 py-2 rounded-lg shadow">Director</div>
+      <div class="bg-blue-200 px-4 py-2 rounded-lg shadow">Director</div>
+      <div class="bg-blue-200 px-4 py-2 rounded-lg shadow">Director</div>
+      <div class="bg-blue-200 px-4 py-2 rounded-lg shadow">Director</div>
+    </div>
+
+    <!-- Senior Members -->
+    <div class="flex justify-center">
+      <div class="bg-slate-200 text-slate-800 px-6 py-2 rounded-xl shadow">
+        Senior Members / Members
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 推理俱乐部 -->
 <section id="logic" class="page max-w-5xl mx-auto p-6">
   <h2 class="text-3xl font-bold">推理俱乐部 · 题库</h2>
@@ -126,12 +203,6 @@
   <div id="posts-fitness" class="mt-6 grid gap-4"></div>
 </section>
 
-<!-- 我的帖子 -->
-<section id="myposts" class="page max-w-5xl mx-auto p-6">
-  <h2 class="text-3xl font-bold">我的帖子</h2>
-  <div id="posts-mine" class="mt-6 grid gap-4"></div>
-</section>
-
 <!-- 管理员后台 -->
 <section id="admin" class="page max-w-5xl mx-auto p-6">
   <h2 class="text-2xl font-bold">管理员后台</h2>
@@ -155,6 +226,8 @@
   </div>
 </section>
 
+  
+
 <script>
 /* Supabase 配置 */
 const SUPABASE_URL = "https://pagpdgzuvikpdbjupqql.supabase.co";
@@ -166,11 +239,10 @@ const $=id=>document.getElementById(id);
 function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
 /* 页面切换 */
-function go(id){
-  if((id==='logic'||id==='fitness'||id==='admin'||id==='myposts')&&!currentUser){
-    alert("请先登录后再访问该页面");
-    return go('auth');
-  }
+if((id==='logic'||id==='fitness'||id==='admin')&&!currentUser){
+  alert("请先登录后再访问该页面");
+  return go('auth');
+}
   document.querySelectorAll('.page').forEach(p=>p.style.display='none');
   $(id).style.display='block';
   if(id==='logic') renderPosts('logic');
@@ -457,6 +529,7 @@ bootstrap();
 </script>
 </body>
 </html>
+
 
 
 
