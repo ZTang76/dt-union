@@ -22,10 +22,10 @@
     <div class="font-black text-2xl tracking-wide">DT Union</div>
     <div class="hidden md:flex items-center gap-6 text-sm">
       <a href="#" onclick="go('home')" class="hover:text-blue-700">主页</a>
-      <a href="#" onclick="go('about')" class="hover:text-blue-700">关于我们</a>
       <a href="#" onclick="go('logic')" class="hover:text-blue-700">推理俱乐部</a>
       <a href="#" onclick="go('soccer')" class="hover:text-blue-700">足球俱乐部</a>
       <a href="#" onclick="go('fitness')" class="hover:text-blue-700">健身打卡</a>
+      <a href="#" onclick="go('about')" class="hover:text-blue-700">关于我们</a>
       <a href="#" onclick="go('auth')" class="hover:text-blue-700">登录/注册</a>
       <span id="adminMenu" class="hidden">
         <a href="#" onclick="go('admin')" class="text-amber-700 font-semibold">后台</a>
@@ -98,7 +98,35 @@
   </div>
 </section>
 
-  <!-- 关于我们 -->
+<!-- 推理俱乐部 -->
+<section id="logic" class="page max-w-5xl mx-auto p-6">
+  <h2 class="text-3xl font-bold">推理俱乐部 · 题库</h2>
+  <div class="mt-4 max-w-2xl">
+    <input id="logicTitle" placeholder="题目标题" class="border p-2 rounded w-full mb-2">
+    <textarea id="logicContent" placeholder="题目内容（不需要写答案）" class="border p-2 rounded w-full mb-2"></textarea>
+    <button onclick="addPost('logic')" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">发布题目</button>
+  </div>
+  <div id="posts-logic" class="mt-6 grid gap-4"></div>
+</section>
+
+<!-- 足球俱乐部 -->
+<section id="soccer" class="page max-w-5xl mx-auto p-6">
+  <h2 class="text-3xl font-bold">足球俱乐部</h2>
+  <p class="text-slate-700 mt-2">我们定期组织友谊赛、一起观赛复盘战术。后续也可升级为论坛模式。</p>
+</section>
+
+<!-- 健身打卡 -->
+<section id="fitness" class="page max-w-5xl mx-auto p-6">
+  <h2 class="text-3xl font-bold">健身打卡 · 论坛</h2>
+  <div class="mt-4 max-w-2xl">
+    <input id="fitTitle" placeholder="打卡主题" class="border p-2 rounded w-full mb-2">
+    <textarea id="fitContent" placeholder="今天训练了什么？饮食如何？" class="border p-2 rounded w-full mb-2"></textarea>
+    <button onclick="addPost('fitness')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded">发布打卡</button>
+  </div>
+  <div id="posts-fitness" class="mt-6 grid gap-4"></div>
+</section>
+
+<!-- 关于我们 -->
 <section id="about" class="page max-w-5xl mx-auto p-6">
   <!-- 文本介绍 -->
   <div class="bg-white rounded-2xl shadow p-6 mb-10">
@@ -175,34 +203,6 @@
   </div>
 </section>
 
-<!-- 推理俱乐部 -->
-<section id="logic" class="page max-w-5xl mx-auto p-6">
-  <h2 class="text-3xl font-bold">推理俱乐部 · 题库</h2>
-  <div class="mt-4 max-w-2xl">
-    <input id="logicTitle" placeholder="题目标题" class="border p-2 rounded w-full mb-2">
-    <textarea id="logicContent" placeholder="题目内容（不需要写答案）" class="border p-2 rounded w-full mb-2"></textarea>
-    <button onclick="addPost('logic')" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">发布题目</button>
-  </div>
-  <div id="posts-logic" class="mt-6 grid gap-4"></div>
-</section>
-
-<!-- 足球俱乐部 -->
-<section id="soccer" class="page max-w-5xl mx-auto p-6">
-  <h2 class="text-3xl font-bold">足球俱乐部</h2>
-  <p class="text-slate-700 mt-2">我们定期组织友谊赛、一起观赛复盘战术。后续也可升级为论坛模式。</p>
-</section>
-
-<!-- 健身打卡 -->
-<section id="fitness" class="page max-w-5xl mx-auto p-6">
-  <h2 class="text-3xl font-bold">健身打卡 · 论坛</h2>
-  <div class="mt-4 max-w-2xl">
-    <input id="fitTitle" placeholder="打卡主题" class="border p-2 rounded w-full mb-2">
-    <textarea id="fitContent" placeholder="今天训练了什么？饮食如何？" class="border p-2 rounded w-full mb-2"></textarea>
-    <button onclick="addPost('fitness')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded">发布打卡</button>
-  </div>
-  <div id="posts-fitness" class="mt-6 grid gap-4"></div>
-</section>
-
 <!-- 管理员后台 -->
 <section id="admin" class="page max-w-5xl mx-auto p-6">
   <h2 class="text-2xl font-bold">管理员后台</h2>
@@ -226,8 +226,6 @@
   </div>
 </section>
 
-  
-
 <script>
 /* Supabase 配置 */
 const SUPABASE_URL = "https://pagpdgzuvikpdbjupqql.supabase.co";
@@ -236,24 +234,24 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser=null;
 const $=id=>document.getElementById(id);
-function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
 
 /* 页面切换 */
-if((id==='logic'||id==='fitness'||id==='admin')&&!currentUser){
-  alert("请先登录后再访问该页面");
-  return go('auth');
-}
+function go(id){
+  if((id==='logic'||id==='fitness'||id==='admin')&&!currentUser){
+    alert("请先登录后再访问该页面");
+    return go('auth');
+  }
   document.querySelectorAll('.page').forEach(p=>p.style.display='none');
   $(id).style.display='block';
   if(id==='logic') renderPosts('logic');
   if(id==='fitness') renderPosts('fitness');
   if(id==='admin') renderUsers();
-  if(id==='myposts') renderMyPosts();
   if(id==='home') renderAnnouncements();
   renderNav();
 }
 
-  /* 导航栏状态 */
+/* 导航栏状态 */
 function renderNav(){
   if(currentUser){
     const name=currentUser.nickname||currentUser.email;
@@ -363,21 +361,6 @@ async function renderPosts(type){
     box.appendChild(renderPostCard(p,cmts||[]));
   }
 }
-async function renderMyPosts(){
-  if(!currentUser){ alert("请先登录"); return go('auth'); }
-  const box=$('posts-mine'); box.innerHTML='';
-  const { data:list }=await sb.from('posts')
-    .select('id,type,title,content,author_email,author_nickname,author_id,created_at,pinned')
-    .eq('author_id',currentUser.id)
-    .order('id',{ascending:false});
-  for(const p of (list||[])){
-    const { data:cmts }=await sb.from('comments')
-      .select('id,post_id,body,author_email,author_nickname,author_id,created_at')
-      .eq('post_id',p.id)
-      .order('id');
-    box.appendChild(renderPostCard(p,cmts||[]));
-  }
-}
 async function renderAnnouncements(){
   const box=$('posts-announcement'); box.innerHTML='';
   const { data:list }=await sb.from('posts')
@@ -446,8 +429,7 @@ function renderPostCard(p, comments){
   return card;
 }
 
-
-  // 展开/收起帖子
+/* 展开/收起帖子 */
 function togglePost(postId){
   const previewDiv = document.getElementById(`preview-${postId}`);
   const fullDiv = document.getElementById(`full-${postId}`);
@@ -499,7 +481,7 @@ async function renderUsers(){
     html.className = "p-2 border rounded mt-2 flex justify-between items-center bg-white";
 
     if(!row.approved){
-      // 待审核用户 → 管理员可通过 / 拒绝（删除）
+      // 待审核用户
       html.innerHTML = `
         <span>${row.email}${row.nickname ? ' / ' + row.nickname : ''}</span>
         <div class="flex gap-2">
@@ -507,9 +489,8 @@ async function renderUsers(){
           <button class="bg-rose-600 text-white px-2 py-1 rounded" onclick="removeUser('${row.id}','${row.email}')">拒绝</button>
         </div>`;
       pending.appendChild(html);
-
     } else {
-      // 已通过用户 → 只能禁言 / 解禁
+      // 已通过用户
       html.innerHTML = `
         <span>${row.email}${row.is_admin ? '（管理员）' : ''}${row.nickname ? ' / ' + row.nickname : ''}${row.muted ? '（已禁言）' : ''}</span>
         <div class="flex gap-2">
@@ -529,6 +510,8 @@ bootstrap();
 </script>
 </body>
 </html>
+
+
 
 
 
